@@ -40,6 +40,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    @ManyToOne
+    private Branch branch;
+
 
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;

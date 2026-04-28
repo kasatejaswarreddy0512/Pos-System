@@ -1,0 +1,46 @@
+package com.ktsr.entity;
+
+import com.ktsr.domain.StoreStatus;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Customer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String fullName;
+
+    private String email;
+
+//    private String password;
+
+    private String phone;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+
+    @PrePersist
+    protected  void onCreate(){
+        createdAt= LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected  void onUpdate(){
+        updatedAt=LocalDateTime.now();
+    }
+}
