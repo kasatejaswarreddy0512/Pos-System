@@ -21,4 +21,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findTo5ByBranchIdOrderByCreatedAtDesc(Long branchId);
 
+    List<Order> findByBranch_Store_Id(Long storeId);
 }

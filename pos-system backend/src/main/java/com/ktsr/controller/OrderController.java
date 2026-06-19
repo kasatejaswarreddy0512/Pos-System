@@ -18,58 +18,100 @@ import java.util.List;
 @RequestMapping("/api/order")
 public class OrderController {
 
-    private  final OrderService orderService;
+    private final OrderService orderService;
 
     @PostMapping
     public ResponseEntity<OrderDto> createOrder(@RequestBody OrderDto orderDto) throws UserException {
         return new ResponseEntity<>(orderService.createOrder(orderDto), HttpStatus.CREATED);
     }
 
+    @GetMapping("/my-store")
+    public ResponseEntity<List<OrderDto>> getMyStoreOrders(
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long cashierId,
+            @RequestParam(required = false) PaymentType paymentType,
+            @RequestParam(required = false) OrderStatus status
+    ) throws UserException {
+        return ResponseEntity.ok(
+                orderService.getMyStoreOrders(
+                        customerId,
+                        cashierId,
+                        paymentType,
+                        status
+                )
+        );
+    }
+
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<List<OrderDto>> getOrdersByStore(
+            @PathVariable Long storeId,
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long cashierId,
+            @RequestParam(required = false) PaymentType paymentType,
+            @RequestParam(required = false) OrderStatus status
+    ) {
+        return ResponseEntity.ok(
+                orderService.getOrderByStore(
+                        storeId,
+                        customerId,
+                        cashierId,
+                        paymentType,
+                        status
+                )
+        );
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<OrderDto> getOrderById(@PathVariable Long id){
+    public ResponseEntity<OrderDto> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
-
     @GetMapping("/branch/{branchId}")
-    public ResponseEntity<List<OrderDto>> getOrderByBranch(@PathVariable Long branchId,
-                                                           @RequestParam(required = false) Long customerId,
-                                                           @RequestParam(required = false) Long cashierId,
-                                                           @RequestParam(required = false)PaymentType paymentType,
-                                                           @RequestParam(required = false)OrderStatus status
-                                                           ){
-        return ResponseEntity.ok(orderService.getOrderByBranch(branchId,
-                customerId,cashierId,paymentType, status));
+    public ResponseEntity<List<OrderDto>> getOrderByBranch(
+            @PathVariable Long branchId,
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long cashierId,
+            @RequestParam(required = false) PaymentType paymentType,
+            @RequestParam(required = false) OrderStatus status
+    ) {
+        return ResponseEntity.ok(
+                orderService.getOrderByBranch(
+                        branchId,
+                        customerId,
+                        cashierId,
+                        paymentType,
+                        status
+                )
+        );
     }
 
     @GetMapping("/cashier/{cashierId}")
-    public ResponseEntity<List<OrderDto>> getOrderByCashier(@PathVariable Long cashierId){
+    public ResponseEntity<List<OrderDto>> getOrderByCashier(@PathVariable Long cashierId) {
         return ResponseEntity.ok(orderService.getOrderByCashier(cashierId));
     }
 
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteOrder(@PathVariable Long id){
+    public ResponseEntity<ApiResponse> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
-        ApiResponse apiResponse= new ApiResponse();
+
+        ApiResponse apiResponse = new ApiResponse();
         apiResponse.setMessage("Order Deleted Successfully...!");
+
         return ResponseEntity.ok(apiResponse);
     }
 
     @GetMapping("/today/{branchId}")
-    public ResponseEntity<List<OrderDto>> getTodayOrderByBranch(@PathVariable Long branchId){
+    public ResponseEntity<List<OrderDto>> getTodayOrderByBranch(@PathVariable Long branchId) {
         return ResponseEntity.ok(orderService.getTodayOrdersByBranch(branchId));
     }
 
-
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<OrderDto>> getOrderByCustomerId(@PathVariable Long customerId){
+    public ResponseEntity<List<OrderDto>> getOrderByCustomerId(@PathVariable Long customerId) {
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
     }
 
     @GetMapping("/top5order/{branchId}")
-    public ResponseEntity<List<OrderDto>> getTop5RecentOrdersByBranchId(@PathVariable Long branchId){
+    public ResponseEntity<List<OrderDto>> getTop5RecentOrdersByBranchId(@PathVariable Long branchId) {
         return ResponseEntity.ok(orderService.getTop5RecentOrdersByBranchId(branchId));
     }
-
 }

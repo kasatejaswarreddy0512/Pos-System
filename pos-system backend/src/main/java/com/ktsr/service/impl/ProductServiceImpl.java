@@ -28,15 +28,31 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto createProduct(ProductDto productDto, User user) {
-        Store store=storeRepository.findById(
-                productDto.getStoreId()
-        ).orElseThrow(()-> new RuntimeException("Store Not Found"));
 
-        Category category= categoryRepository.findById(productDto.getCategoryId()).orElseThrow(
-                ()-> new RuntimeException("Category Not Found...!") );
+        Store store;
 
-        Product product=ProductMapper.toEntity(productDto,store, category);
-        Product saveProduct=productRepository.save(product);
+        if (productDto.getStoreId() != null) {
+            store = storeRepository.findById(productDto.getStoreId())
+                    .orElseThrow(() -> new RuntimeException("Store Not Found"));
+        } else {
+            store = user.getStore();
+
+            if (store == null) {
+                store = storeRepository.findByStoreAdminId(user.getId());
+            }
+
+            if (store == null) {
+                throw new RuntimeException("Store Not Found for current user");
+            }
+        }
+
+        Category category = categoryRepository.findById(productDto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category Not Found...!"));
+
+        Product product = ProductMapper.toEntity(productDto, store, category);
+
+        Product saveProduct = productRepository.save(product);
+
         return ProductMapper.toDto(saveProduct);
     }
 
@@ -44,6 +60,26 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto getProductById(Long id) {
         Product product=productRepository.findById(id).orElseThrow(()-> new RuntimeException("Product Not Found"));
         return ProductMapper.toDto(product);
+    }
+
+    @Override
+    public List<ProductDto> getProductsForCurrentStoreAdmin(User user) {
+
+        Store store = user.getStore();
+
+        if (store == null) {
+            store = storeRepository.findByStoreAdminId(user.getId());
+        }
+
+        if (store == null) {
+            throw new RuntimeException("Store not found for current store admin");
+        }
+
+        List<Product> products = productRepository.findByStoreId(store.getId());
+
+        return products.stream()
+                .map(ProductMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override

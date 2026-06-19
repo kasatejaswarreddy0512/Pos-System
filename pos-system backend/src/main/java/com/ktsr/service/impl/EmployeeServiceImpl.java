@@ -4,12 +4,14 @@ import com.ktsr.domain.UserRole;
 import com.ktsr.entity.Branch;
 import com.ktsr.entity.Store;
 import com.ktsr.entity.User;
+import com.ktsr.exceptions.UserException;
 import com.ktsr.mapper.UserMapper;
 import com.ktsr.payload.DTO.UserDto;
 import com.ktsr.repository.BranchRepository;
 import com.ktsr.repository.StoreRepository;
 import com.ktsr.repository.UserRepository;
 import com.ktsr.service.EmployeeService;
+import com.ktsr.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final StoreRepository storeRepository;
     private final BranchRepository branchRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     @Override
     public UserDto createStoreEmployee(UserDto employee, Long storeId) {
@@ -70,6 +73,33 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         }
         throw  new RuntimeException("Branch Role Not Supported..!");
+    }
+
+    @Override
+    public List<UserDto> getMyStoreEmployees(UserRole role) throws UserException {
+        Store store = getCurrentUserStore();
+
+        return userRepository.findByStore(store)
+                .stream()
+                .filter(user -> role == null || user.getRole() == role)
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private Store getCurrentUserStore() throws UserException {
+        User currentUser = userService.getCurrentUser();
+
+        Store store = currentUser.getStore();
+
+        if (store == null) {
+            store = storeRepository.findByStoreAdminId(currentUser.getId());
+        }
+
+        if (store == null) {
+            throw new RuntimeException("Store not found for current Store Admin");
+        }
+
+        return store;
     }
 
     @Override

@@ -76,4 +76,26 @@ public class BranchServiceImpl implements BranchService {
                 BranchMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<BranchDto> getBranchesForCurrentStoreAdmin() throws UserException {
+
+        User currentUser = userService.getCurrentUser();
+
+        Store store = currentUser.getStore();
+
+        if (store == null) {
+            store = storeRepository.findByStoreAdminId(currentUser.getId());
+        }
+
+        if (store == null) {
+            throw new RuntimeException("Store not found for current store admin");
+        }
+
+        List<Branch> branches = branchRepository.findByStoreId(store.getId());
+
+        return branches.stream()
+                .map(BranchMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

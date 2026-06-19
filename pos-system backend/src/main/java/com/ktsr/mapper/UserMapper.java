@@ -7,21 +7,25 @@ import java.time.LocalDateTime;
 
 public class UserMapper {
 
-    public static UserDto toDto(User savedUser) {
-        UserDto userDto= new UserDto();
-        userDto.setId(savedUser.getId());
-        userDto.setEmail(savedUser.getEmail());
-        userDto.setPassword(savedUser.getPassword());
-        userDto.setFullName(savedUser.getFullName());
-        userDto.setPhone(savedUser.getPhone());
-        userDto.setRole(savedUser.getRole());
-        userDto.setCreatedAt(savedUser.getCreatedAt());
-        userDto.setUpdateAt(savedUser.getUpdateAt());
-        userDto.setLastLoginAt(savedUser.getLastLoginAt());
-        userDto.setBranchId(savedUser.getBranch()!= null? savedUser.getBranch().getId(): null);
-        userDto.setStoreId(savedUser.getStore()!=null ? savedUser.getStore().getId():null);
+    public static UserDto toDto(User user) {
+        if (user == null) {
+            return null;
+        }
 
-        return userDto;
+        return UserDto.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .storeId(user.getStore() != null ? user.getStore().getId() : null)
+                .storeName(user.getStore() != null ? user.getStore().getBrand() : null)
+                .branchId(user.getBranch() != null ? user.getBranch().getId() : null)
+                .branchName(user.getBranch() != null ? user.getBranch().getName() : null)
+                .createdAt(user.getCreatedAt())
+                .updateAt(user.getUpdateAt())
+                .lastLoginAt(user.getLastLoginAt())
+                .build();
     }
 
     public static  User toEntity(UserDto userDto){

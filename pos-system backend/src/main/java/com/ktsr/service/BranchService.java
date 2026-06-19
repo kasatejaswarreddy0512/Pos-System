@@ -17,4 +17,5 @@ public interface BranchService {
     void deleteBranch(Long id);
 
     List<BranchDto> getAllBranchesBYStoreId(Long storeId);
+    List<BranchDto> getBranchesForCurrentStoreAdmin() throws UserException;
 }

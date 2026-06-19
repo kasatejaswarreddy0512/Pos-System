@@ -28,6 +28,11 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getCategoriesByStore(storeId));
     }
 
+    @GetMapping("/my-store")
+    public ResponseEntity<List<CategoryDto>> getMyStoreCategories() throws UserException {
+        return ResponseEntity.ok(categoryService.getCategoriesForCurrentStoreAdmin());
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) throws UserException {
         return ResponseEntity.ok(categoryService.updateCategory(id,categoryDto));

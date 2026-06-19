@@ -49,6 +49,27 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public List<CategoryDto> getCategoriesForCurrentStoreAdmin() throws UserException {
+        User user = userService.getCurrentUser();
+
+        Store store = user.getStore();
+
+        if (store == null) {
+            store = storeRepository.findByStoreAdminId(user.getId());
+        }
+
+        if (store == null) {
+            throw new RuntimeException("Store not found for current store admin");
+        }
+
+        List<Category> categories = categoryRepository.findByStoreId(store.getId());
+
+        return categories.stream()
+                .map(CategoryMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public CategoryDto updateCategory(Long id, CategoryDto categoryDto) throws UserException {
         Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new RuntimeException("Category Not Found...!"));

@@ -14,6 +14,8 @@ public interface ProductService {
     ProductDto updateProduct(Long id, ProductDto productDto, User user);
     List<ProductDto> getProductByStoreId( Long storeId);
 
+    List<ProductDto> getProductsForCurrentStoreAdmin(User user);
+
     List<ProductDto> searchByKeyword(Long storeId,String keyword);
 
     void deleteProduct(Long id);

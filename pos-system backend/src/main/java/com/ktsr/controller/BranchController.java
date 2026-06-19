@@ -36,6 +36,11 @@ public class BranchController {
         return ResponseEntity.ok(branchService.getAllBranchesBYStoreId(storeId));
     }
 
+    @GetMapping("/my-store")
+    public ResponseEntity<List<BranchDto>> getMyStoreBranches() throws UserException {
+        return ResponseEntity.ok(branchService.getBranchesForCurrentStoreAdmin());
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<BranchDto> updateBranch(@PathVariable Long id, @RequestBody BranchDto branchDto){
         return ResponseEntity.ok(branchService.updateBranch(id, branchDto));

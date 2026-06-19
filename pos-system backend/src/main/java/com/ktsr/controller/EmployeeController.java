@@ -2,6 +2,7 @@ package com.ktsr.controller;
 
 import com.ktsr.domain.UserRole;
 import com.ktsr.entity.User;
+import com.ktsr.exceptions.UserException;
 import com.ktsr.payload.DTO.UserDto;
 import com.ktsr.payload.response.ApiResponse;
 import com.ktsr.service.EmployeeService;
@@ -31,6 +32,13 @@ public class EmployeeController {
     public ResponseEntity<UserDto> createBranchEmployee(@PathVariable Long branchId, @RequestBody UserDto userDto){
         UserDto employee=employeeService.createBranchEmployee(userDto,branchId);
         return new ResponseEntity<>(employee, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/my-store")
+    public ResponseEntity<List<UserDto>> getMyStoreEmployees(
+            @RequestParam(required = false) UserRole role
+    ) throws UserException {
+        return ResponseEntity.ok(employeeService.getMyStoreEmployees(role));
     }
 
     @PutMapping("/{id}")

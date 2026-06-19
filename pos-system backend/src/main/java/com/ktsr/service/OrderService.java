@@ -10,14 +10,34 @@ import java.util.List;
 public interface OrderService {
 
     OrderDto createOrder(OrderDto orderDto) throws UserException;
-    OrderDto getOrderById(Long id);
-    List<OrderDto> getOrderByBranch(Long branchId,
-                                    Long customerId,
-                                    Long cashierId,
-                                    PaymentType paymentType,
-                                    OrderStatus status);
 
-    List<OrderDto>  getOrderByCashier(Long cashierId);
+    OrderDto getOrderById(Long id);
+
+    List<OrderDto> getOrderByBranch(
+            Long branchId,
+            Long customerId,
+            Long cashierId,
+            PaymentType paymentType,
+            OrderStatus status
+    );
+
+    List<OrderDto> getOrderByStore(
+            Long storeId,
+            Long customerId,
+            Long cashierId,
+            PaymentType paymentType,
+            OrderStatus status
+    );
+
+    List<OrderDto> getMyStoreOrders(
+            Long customerId,
+            Long cashierId,
+            PaymentType paymentType,
+            OrderStatus status
+    ) throws UserException;
+
+    List<OrderDto> getOrderByCashier(Long cashierId);
+
     void deleteOrder(Long id);
 
     List<OrderDto> getTodayOrdersByBranch(Long branchId);
@@ -25,5 +45,4 @@ public interface OrderService {
     List<OrderDto> getOrdersByCustomerId(Long customerId);
 
     List<OrderDto> getTop5RecentOrdersByBranchId(Long branchId);
-
 }
