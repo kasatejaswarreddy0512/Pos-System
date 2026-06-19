@@ -1,5 +1,6 @@
 package com.ktsr.mapper;
 
+import com.ktsr.domain.StoreStatus;
 import com.ktsr.entity.Store;
 import com.ktsr.entity.User;
 import com.ktsr.payload.DTO.StoreDto;
@@ -31,7 +32,7 @@ public class StoreMapper {
         store.setContact(storeDto.getContact());
         store.setCreatedAt(storeDto.getCreatedAt());
         store.setUpdatedAt(storeDto.getUpdatedAt());
-        store.setStatus(storeDto.getStatus());
+        store.setStatus(StoreStatus.ACTIVE);
 
         return store;
     }

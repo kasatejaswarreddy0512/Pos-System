@@ -7,20 +7,21 @@ import java.util.stream.Collectors;
 
 public class OrderMapper {
 
-    public static OrderDto toDto(Order order){
+    public static OrderDto toDto(Order order) {
         return OrderDto.builder()
                 .id(order.getId())
                 .totalAmount(order.getTotalAmount())
-                .branchId(order.getBranch().getId())
-                .cashier(UserMapper.toDto(order.getCashier()))
-                .customer(order.getCustomer())
-                .customerId(order.getCustomer() != null ? order.getCustomer().getId() : null)
+                .createdAt(order.getCreatedAt())
                 .paymentType(order.getPaymentType())
                 .orderStatus(order.getOrderStatus())
-                .createdAt(order.getCreatedAt())
-                .items(order.getItems().stream()
-                        .map(OrderItemMapper::toDto)
-                        .collect(Collectors.toList()))
+                .branchId(order.getBranch() != null ? order.getBranch().getId() : null)
+                .branch(order.getBranch() != null ? BranchMapper.toDto(order.getBranch()) : null)
+                .cashier(order.getCashier() != null ? UserMapper.toDto(order.getCashier()) : null)
+                .customer(order.getCustomer())
+                .customerId(order.getCustomer() != null ? order.getCustomer().getId() : null)
+                .items(order.getItems() != null
+                        ? order.getItems().stream().map(OrderItemMapper::toDto).toList()
+                        : null)
                 .build();
     }
 

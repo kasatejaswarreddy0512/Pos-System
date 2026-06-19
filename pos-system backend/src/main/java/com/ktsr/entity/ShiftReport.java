@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -39,8 +40,13 @@ public class ShiftReport {
     @Transient
     private List<PaymentSummary> paymentSummaries;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Product> topSellingProducts;
+    @ManyToMany
+    @JoinTable(
+            name = "shift_report_top_selling_products",
+            joinColumns = @JoinColumn(name = "shift_report_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private List<Product> topSellingProducts = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<Order> recentOrders;

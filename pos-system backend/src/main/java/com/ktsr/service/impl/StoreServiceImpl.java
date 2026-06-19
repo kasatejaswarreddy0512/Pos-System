@@ -89,7 +89,7 @@ public class StoreServiceImpl implements StoreService {
     public StoreDto getStoreByEmployee() throws UserException {
         User user= userService.getCurrentUser();
         if(user==null){
-            throw  new RuntimeException("You don't Have permissionto access store..!");
+            throw  new RuntimeException("You don't Have permission to access store..!");
         }
         return StoreMapper.toDto(user.getStore());
     }

@@ -32,6 +32,7 @@ public class Store {
 
     private String storeType;
 
+    @Enumerated(EnumType.STRING)
     private StoreStatus status;
 
     @Embedded

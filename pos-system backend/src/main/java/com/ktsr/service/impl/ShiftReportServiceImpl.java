@@ -137,30 +137,37 @@ public class ShiftReportServiceImpl implements ShiftReportService {
     @Override
     public ShiftReportDto getCurrentShiftProgress(Long cashierId) throws UserException {
 
-        User currentUser=userService.getCurrentUser();
+        User currentUser = userService.getCurrentUser();
 
-        ShiftReport shiftReport=shiftReportRepository.findTopByCashierAndShiftEndIsNullOrderByShiftStartDesc(currentUser)
-                .orElseThrow(()-> new RuntimeException("No Active Shift Found Cashier...!"));
+        ShiftReport shiftReport = shiftReportRepository
+                .findTopByCashierAndShiftEndIsNullOrderByShiftStartDesc(currentUser)
+                .orElseThrow(() -> new RuntimeException("No Active Shift Found Cashier...!"));
 
-        LocalDateTime now=LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
 
-        List<Order> orders=orderRepository.findByCashierAndCreatedAtBetween(
-                currentUser,shiftReport.getShiftStart(), now);
+        List<Order> orders = orderRepository.findByCashierAndCreatedAtBetween(
+                currentUser,
+                shiftReport.getShiftStart(),
+                now
+        );
 
-        List<Refund> refunds= refundRepository.findByCashierIdAndCreatedAtBetween(
-                currentUser.getId(),shiftReport.getShiftStart(),now);
+        List<Refund> refunds = refundRepository.findByCashierIdAndCreatedAtBetween(
+                currentUser.getId(),
+                shiftReport.getShiftStart(),
+                now
+        );
 
-        Double totalRefunds=refunds.stream()
-                .mapToDouble(refund -> refund.getAmount()!=null? refund.getAmount() : 0.0).sum();
+        Double totalRefunds = refunds.stream()
+                .mapToDouble(refund -> refund.getAmount() != null ? refund.getAmount() : 0.0)
+                .sum();
 
+        Double totalSales = orders.stream()
+                .mapToDouble(order -> order.getTotalAmount() != null ? order.getTotalAmount() : 0.0)
+                .sum();
 
+        Integer totalOrders = orders.size();
 
-        Double totalSales= orders.stream()
-                .mapToDouble(Order::getTotalAmount).sum();
-
-        Integer totalOrders=orders.size();
-
-        Double netSales=totalSales-totalRefunds;
+        Double netSales = totalSales - totalRefunds;
 
         shiftReport.setTotalRefunds(totalRefunds);
         shiftReport.setTotalSales(totalSales);
@@ -168,10 +175,8 @@ public class ShiftReportServiceImpl implements ShiftReportService {
         shiftReport.setNetSales(netSales);
         shiftReport.setRecentOrders(getRecentOrders(orders));
         shiftReport.setTopSellingProducts(getTopSellingProducts(orders));
-        shiftReport.setPaymentSummaries(getPaymentSummaries(orders,totalSales));
+        shiftReport.setPaymentSummaries(getPaymentSummaries(orders, totalSales));
         shiftReport.setRefunds(refunds);
-
-        ShiftReport savedReport= shiftReportRepository.save(shiftReport);
 
         return ShiftReportMapper.toDto(shiftReport);
     }
@@ -196,23 +201,34 @@ public class ShiftReportServiceImpl implements ShiftReportService {
 
 
     private List<PaymentSummary> getPaymentSummaries(List<Order> orders, Double totalSales) {
-        Map<PaymentType, List<Order>> grouped= orders.stream()
-                .collect(Collectors.groupingBy(order -> order.getPaymentType()!=null?
-                        order.getPaymentType():PaymentType.CASH));
-        List<PaymentSummary> summaries=new ArrayList<>();
-        for(Map.Entry<PaymentType, List<Order>> entry:grouped.entrySet()){
-            Double amount=entry.getValue().stream()
-                    .mapToDouble(Order::getTotalAmount).sum();
-            int transaction=entry.getValue().size();
-            Double percentage=(amount/totalSales)*100;
+        if (orders == null || orders.isEmpty() || totalSales == null || totalSales == 0) {
+            return new ArrayList<>();
+        }
 
-            PaymentSummary summary=new PaymentSummary();
+        Map<PaymentType, List<Order>> grouped = orders.stream()
+                .collect(Collectors.groupingBy(order -> order.getPaymentType() != null
+                        ? order.getPaymentType()
+                        : PaymentType.CASH));
+
+        List<PaymentSummary> summaries = new ArrayList<>();
+
+        for (Map.Entry<PaymentType, List<Order>> entry : grouped.entrySet()) {
+            Double amount = entry.getValue().stream()
+                    .mapToDouble(order -> order.getTotalAmount() != null ? order.getTotalAmount() : 0.0)
+                    .sum();
+
+            int transaction = entry.getValue().size();
+            Double percentage = totalSales > 0 ? (amount / totalSales) * 100 : 0.0;
+
+            PaymentSummary summary = new PaymentSummary();
             summary.setPaymentType(entry.getKey());
             summary.setTotalAmount(amount);
             summary.setTransactionCount(transaction);
             summary.setPercentage(percentage);
+
             summaries.add(summary);
         }
+
         return summaries;
     }
 

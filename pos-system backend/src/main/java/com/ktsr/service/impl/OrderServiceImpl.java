@@ -6,6 +6,7 @@ import com.ktsr.entity.*;
 import com.ktsr.exceptions.UserException;
 import com.ktsr.mapper.OrderMapper;
 import com.ktsr.payload.DTO.OrderDto;
+import com.ktsr.repository.CustomerRepository;
 import com.ktsr.repository.OrderItemRepository;
 import com.ktsr.repository.OrderRepository;
 import com.ktsr.repository.ProductRepository;
@@ -27,21 +28,31 @@ public class OrderServiceImpl implements OrderService {
     private final UserService userService;
     private final ProductRepository productRepository;
     private  final OrderItemRepository orderItemRepository;
+    private final CustomerRepository customerRepository;
 
     @Override
     public OrderDto createOrder(OrderDto orderDto) throws UserException {
-        User cashier= userService.getCurrentUser();
-        Branch branch= cashier.getBranch();
-        if(branch==null){
-            throw  new RuntimeException(" Cashier Branch Not Found...!");
+
+        User cashier = userService.getCurrentUser();
+
+        Branch branch = cashier.getBranch();
+        if (branch == null) {
+            throw new RuntimeException("Cashier Branch Not Found...!");
         }
 
-        Order order= Order.builder()
+        Customer customer = null;
+
+        if (orderDto.getCustomerId() != null) {
+            customer = customerRepository.findById(orderDto.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("Customer Not Found"));
+        }
+
+        Order order = Order.builder()
                 .branch(branch)
                 .cashier(cashier)
-                .customer(orderDto.getCustomer())
+                .customer(customer)
                 .paymentType(orderDto.getPaymentType())
-                .orderStatus(OrderStatus.PENDING)
+                .orderStatus(OrderStatus.COMPLETED)
                 .build();
 
         List<OrderItem> orderItems = orderDto.getItems().stream()
@@ -65,7 +76,6 @@ public class OrderServiceImpl implements OrderService {
         order.setItems(orderItems);
 
         Order savedOrder = orderRepository.save(order);
-
 
         return OrderMapper.toDto(savedOrder);
     }
