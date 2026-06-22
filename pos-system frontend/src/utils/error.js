@@ -1,0 +1,1 @@
+export const getApiErrorMessage=(error)=>{ const data=error?.response?.data; if(!data) return error?.message||'Something went wrong'; if(typeof data==='string') return data; return data.message||data.error||'Something went wrong'; };

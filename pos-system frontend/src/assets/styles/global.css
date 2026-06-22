@@ -1,0 +1,63 @@
+:root {
+    --pos-green: #014737;
+    --pos-pink: #ff174f;
+    --pos-dark: #101114;
+    --pos-card: #18191d;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, Roboto, Arial, sans-serif;
+    background: #f7f9fb;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.pos-gradient {
+    background: linear-gradient(135deg,
+            #eef8f4 0%,
+            #fff 55%,
+            #f7fbfa 100%);
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(150, 150, 150, 0.45);
+    border-radius: 20px;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .receipt-print,
+    .receipt-print * {
+        visibility: visible;
+    }
+
+    .receipt-print {
+        position: absolute;
+        inset: 0;
+        background: white;
+        color: black;
+        padding: 24px;
+    }
+}
