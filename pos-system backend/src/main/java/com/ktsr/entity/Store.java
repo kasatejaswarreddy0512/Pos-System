@@ -41,7 +41,7 @@ public class Store {
     @PrePersist
     protected  void onCreate(){
         createdAt= LocalDateTime.now();
-        status=StoreStatus.PENDING;
+        status=StoreStatus.ACTIVE;
     }
 
     @PreUpdate

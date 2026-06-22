@@ -31,26 +31,38 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public UserDto createStoreEmployee(UserDto employee, Long storeId) {
-        Store store= storeRepository.findById(storeId).orElseThrow(
-                ()-> new RuntimeException("Store Not Found...!"));
 
-        Branch branch=null;
+        Store store = storeRepository.findById(storeId).orElseThrow(
+                () -> new RuntimeException("Store Not Found...!"));
 
-        if(employee.getRole()==UserRole.ROLE_BRANCH_MANAGER){
-            if(employee.getBranchId()==null){
-                throw new RuntimeException("Branch Id is Required to create Branch Manager");
+        Branch branch = null;
+
+        boolean isBranchManager = employee.getRole() == UserRole.ROLE_BRANCH_MANAGER;
+        boolean isBranchCashier = employee.getRole() == UserRole.ROLE_BRANCH_CASHIER;
+
+        if (isBranchManager || isBranchCashier) {
+
+            if (employee.getBranchId() == null) {
+                throw new RuntimeException("Branch Id is Required to create " + employee.getRole());
             }
-            branch=branchRepository.findById(employee.getBranchId()).orElseThrow(
-                    ()->new RuntimeException("branch Not Found...!"));
+
+            branch = branchRepository.findById(employee.getBranchId()).orElseThrow(
+                    () -> new RuntimeException("Branch Not Found...!"));
+
+            if (branch.getStore() == null || !branch.getStore().getId().equals(store.getId())) {
+                throw new RuntimeException("Selected branch does not belong to this store");
+            }
         }
-        User  user= UserMapper.toEntity(employee);
+
+        User user = UserMapper.toEntity(employee);
+
         user.setStore(store);
         user.setBranch(branch);
         user.setPassword(passwordEncoder.encode(employee.getPassword()));
 
-        User savedEmployee= userRepository.save(user);
+        User savedEmployee = userRepository.save(user);
 
-        if(employee.getRole() == UserRole.ROLE_BRANCH_MANAGER && branch!=null){
+        if (isBranchManager && branch != null) {
             branch.setManager(savedEmployee);
             branchRepository.save(branch);
         }

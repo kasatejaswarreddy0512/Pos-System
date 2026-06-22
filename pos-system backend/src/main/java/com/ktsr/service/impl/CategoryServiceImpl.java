@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,22 +28,26 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto createCategory(CategoryDto categoryDto) throws UserException {
-        User user= userService.getCurrentUser();
-        Store store=storeRepository.findById(categoryDto.getStoreId()).orElseThrow(
-                ()->new RuntimeException("Store not Found"));
+        User user = userService.getCurrentUser();
 
-        Category category= Category.builder()
+        Store store = getStoreForCurrentUser(categoryDto.getStoreId(), user);
+
+        checkAuthority(user, store);
+
+        Category category = Category.builder()
                 .store(store)
                 .name(categoryDto.getName())
                 .build();
-        checkAuthority(user, category.getStore());
 
-        return CategoryMapper.toDto(categoryRepository.save(category));
+        Category savedCategory = categoryRepository.save(category);
+
+        return CategoryMapper.toDto(savedCategory);
     }
 
     @Override
     public List<CategoryDto> getCategoriesByStore(Long storeId) {
-        List<Category> categories=categoryRepository.findByStoreId(storeId);
+        List<Category> categories = categoryRepository.findByStoreId(storeId);
+
         return categories.stream()
                 .map(CategoryMapper::toDto)
                 .collect(Collectors.toList());
@@ -52,15 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryDto> getCategoriesForCurrentStoreAdmin() throws UserException {
         User user = userService.getCurrentUser();
 
-        Store store = user.getStore();
-
-        if (store == null) {
-            store = storeRepository.findByStoreAdminId(user.getId());
-        }
-
-        if (store == null) {
-            throw new RuntimeException("Store not found for current store admin");
-        }
+        Store store = getStoreForCurrentUser(null, user);
 
         List<Category> categories = categoryRepository.findByStoreId(store.getId());
 
@@ -75,33 +72,76 @@ public class CategoryServiceImpl implements CategoryService {
                 () -> new RuntimeException("Category Not Found...!"));
 
         User user = userService.getCurrentUser();
+
         checkAuthority(user, category.getStore());
 
         category.setName(categoryDto.getName());
 
-        return CategoryMapper.toDto(categoryRepository.save(category));
+        Category updatedCategory = categoryRepository.save(category);
+
+        return CategoryMapper.toDto(updatedCategory);
     }
 
     @Override
     public void deleteCategory(Long id) throws UserException {
-        Category category= categoryRepository.findById(id).orElseThrow(
-                ()-> new RuntimeException("Category Not Found...!"));
+        Category category = categoryRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Category Not Found...!"));
 
-        User user= userService.getCurrentUser();
+        User user = userService.getCurrentUser();
+
         checkAuthority(user, category.getStore());
-        categoryRepository.delete(category);
 
+        categoryRepository.delete(category);
     }
 
-    private void checkAuthority(User user, Store store){
-        boolean isAdmin= user.getRole().equals(UserRole.ROLE_STORE_ADMIN);
-        boolean isManager= user.getRole().equals(UserRole.ROLE_STORE_MANAGER);
-        boolean isSameStore= user.equals(store.getStoreAdmin());
+    private Store getStoreForCurrentUser(Long storeId, User user) {
+        Store store = null;
 
-        if(!(isAdmin && isSameStore)  &&  !isManager){
-            throw  new RuntimeException("You don't have permission to manage this category...!");
+        if (storeId != null) {
+            store = storeRepository.findById(storeId).orElseThrow(
+                    () -> new RuntimeException("Store not found with id: " + storeId));
+        }
+
+        if (store == null && user.getStore() != null) {
+            store = user.getStore();
+        }
+
+        if (store == null) {
+            store = storeRepository.findByStoreAdminId(user.getId());
+        }
+
+        if (store == null) {
+            throw new RuntimeException("Store not found for current user");
+        }
+
+        return store;
+    }
+
+    private void checkAuthority(User user, Store store) {
+        boolean isStoreAdmin = user.getRole() == UserRole.ROLE_STORE_ADMIN;
+        boolean isStoreManager = user.getRole() == UserRole.ROLE_STORE_MANAGER;
+
+        Long loggedInUserId = user.getId();
+
+        Long storeAdminId = store.getStoreAdmin() != null
+                ? store.getStoreAdmin().getId()
+                : null;
+
+        boolean isSameStoreAdmin = isStoreAdmin &&
+                storeAdminId != null &&
+                Objects.equals(loggedInUserId, storeAdminId);
+
+        boolean isSameStoreManager = false;
+
+        if (isStoreManager && user.getStore() != null) {
+            isSameStoreManager = Objects.equals(
+                    user.getStore().getId(),
+                    store.getId()
+            );
+        }
+
+        if (!isSameStoreAdmin && !isSameStoreManager) {
+            throw new RuntimeException("You don't have permission to manage this category...!");
         }
     }
-
-
 }
