@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import GenericCrudPage from "../crud/GenericCrudPage.jsx";
+
 import {
     refundFields,
     schemas,
@@ -27,6 +28,8 @@ export default function RefundsPage() {
     const [orders, setOrders] = useState([]);
 
     useEffect(() => {
+        if (!branchId) return;
+
         orderService
             .getByBranch(branchId)
             .then(setOrders)
@@ -46,6 +49,48 @@ export default function RefundsPage() {
         [orders]
     );
 
+    const loadRefunds = async () => {
+        const [refunds, orderList] = await Promise.all([
+            refundService.getByBranch(branchId),
+            orderService.getByBranch(branchId),
+        ]);
+
+        setOrders(orderList);
+
+        return refunds.map((refund) => {
+            const orderId =
+                refund.orderId ??
+                refund.order?.id;
+
+            const order = orderList.find(
+                (o) =>
+                    String(o.id) ===
+                    String(orderId)
+            );
+
+            return {
+                ...refund,
+
+                orderId:
+                    orderId ??
+                    order?.id ??
+                    null,
+
+                cashierName:
+                    refund.cashierName ??
+                    refund.cashier?.fullName ??
+                    order?.cashier?.fullName ??
+                    "-",
+
+                paymentType:
+                    refund.paymentType ??
+                    refund.paymentMethod ??
+                    order?.paymentType ??
+                    "-",
+            };
+        });
+    };
+
     return (
         <GenericCrudPage
             title="Refund"
@@ -59,9 +104,7 @@ export default function RefundsPage() {
                 paymentType: "CASH",
             }}
             validationSchema={schemas.refund}
-            loadData={() =>
-                refundService.getByBranch(branchId)
-            }
+            loadData={loadRefunds}
             createData={refundService.create}
             updateData={null}
             deleteData={refundService.remove}

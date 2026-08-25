@@ -443,21 +443,27 @@ export const tableColumns = {
     ],
 
     refunds: [
-        { field: "id", headerName: "ID", width: 80 },
         {
-            field: "order",
-            headerName: "Order",
-            width: 120,
-            renderCell: (p) =>
-                p.value?.id || p.row?.orderId || "-",
+            field: "id",
+            headerName: "ID",
+            width: 80,
         },
         {
-            field: "cashier",
+            field: "orderId",
+            headerName: "Order",
+            width: 120,
+            valueGetter: (_, row) =>
+                row?.orderId ??
+                row?.order?.id ??
+                "-",
+        },
+        {
+            field: "cashierName",
             headerName: "Cashier",
             flex: 1,
-            renderCell: (p) =>
-                p.value?.fullName ||
-                p.row?.cashierName ||
+            valueGetter: (_, row) =>
+                row?.cashierName ??
+                row?.cashier?.fullName ??
                 "-",
         },
         {
@@ -465,12 +471,14 @@ export const tableColumns = {
             headerName: "Amount",
             width: 150,
             valueGetter: (_, row) =>
-                formatCurrency(row.amount),
+                formatCurrency(row?.amount),
         },
         {
             field: "paymentType",
             headerName: "Payment",
             width: 130,
+            valueGetter: (_, row) =>
+                row?.paymentType || "-",
         },
         {
             field: "reason",
@@ -482,7 +490,7 @@ export const tableColumns = {
             headerName: "Created",
             width: 180,
             valueGetter: (_, row) =>
-                formatDateTime(row.createdAt),
+                formatDateTime(row?.createdAt),
         },
     ],
 

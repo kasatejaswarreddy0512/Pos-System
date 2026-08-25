@@ -1,0 +1,102 @@
+services:
+
+  possystem:
+    image: mysql:8.4
+    container_name: possystem
+    ports:
+      - "3307:3306"
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: possystem
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+    volumes:
+      - possystem_mysql_data:/var/lib/mysql
+
+    networks:
+      - kasatejaswarreddy1999
+
+
+  possystembackend:
+    image: kasatejaswarreddy1999/pos-system:v1
+    container_name: possystembackend
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      SPRING_APPLICATION_NAME: pos-system
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://possystem:3306/possystem
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+    depends_on:
+      possystem:
+        condition: service_healthy
+
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+
+    networks:
+      - kasatejaswarreddy1999
+
+
+
+  prometheus:
+    image: prom/prometheus:v2.35.0
+    container_name: prometheus
+    restart: unless-stopped
+
+    volumes:
+      - ./data/prometheus/config:/etc/prometheus
+
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+    ports:
+      - "9090:9090"
+
+
+#  node-exporter:
+#    image: prom/node-exporter
+#    network_mode: host
+#    container_name: mointering_node_exporter
+#    restart: unless-stopped
+#    expose:
+#      - 9100
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    user: root
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    depends_on:
+      - prometheus
+
+
+
+
+networks:
+  kasatejaswarreddy1999:
+    driver: bridge
+
+volumes:
+  possystem_mysql_data:

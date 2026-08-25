@@ -40,7 +40,7 @@ public class ShiftReport {
     @Transient
     private List<PaymentSummary> paymentSummaries;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "shift_report_top_selling_products",
             joinColumns = @JoinColumn(name = "shift_report_id"),
@@ -48,10 +48,10 @@ public class ShiftReport {
     )
     private List<Product> topSellingProducts = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Order> recentOrders;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "shiftReport")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,mappedBy = "shiftReport")
     private List<Refund> refunds;
 
 }

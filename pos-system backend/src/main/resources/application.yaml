@@ -12,9 +12,29 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+    open-in-view: false
+    generate-ddl: false
+
+  sql:
+    init:
+      mode: never
 
 server:
   port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - prometheus
+
+  endpoint:
+    prometheus:
+      enabled: true
 #
 #eureka:
 #  instance:
